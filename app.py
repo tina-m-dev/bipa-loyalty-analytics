@@ -37,12 +37,12 @@ def suggest(cols, options):
             return low[x]
     return None
 
-def map_field(label, cols, aliases, required=False):
+def map_field(label, cols, aliases, required=False, key_prefix=""):
     guess = suggest(cols, aliases)
     options = ["—"] + list(cols)
     default = options.index(guess) if guess in cols else 0
     suffix = " *" if required else ""
-    return st.selectbox(label + suffix, options, index=default, key=f"map_{label}")
+    return st.selectbox(label + suffix, options, index=default, key=f"map_{key_prefix}_{label}")
 
 # ---------------- Sidebar: data loading ----------------
 st.sidebar.header("1. Load your data")
@@ -86,7 +86,7 @@ with st.sidebar.expander("Transaction data", expanded=True):
     }
     tx_labels = {}
     for label, aliases in tx_aliases.items():
-        tx_labels[label] = map_field(label, tx_raw.columns, aliases, label in ["Customer ID","Transaction date","Net sales"])
+        tx_labels[label] = map_field(label, tx_raw.columns, aliases, label in ["Customer ID","Transaction date","Net sales"], key_prefix="tx")
 
 items_labels = {}
 if items_raw is not None:
@@ -99,7 +99,7 @@ if items_raw is not None:
             "Item margin": ["margin","gross_margin","contribution_margin"],
         }
         for label, aliases in items_aliases.items():
-            items_labels[label] = map_field(label, items_raw.columns, aliases, label in ["Transaction ID","Category"])
+            items_labels[label] = map_field(label, items_raw.columns, aliases, label in ["Transaction ID","Category"], key_prefix="items")
 
 # Convert labels to canonical names.
 required_labels = {"Customer ID":"customer_id", "Transaction date":"date", "Net sales":"net_sales"}
